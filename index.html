@@ -277,6 +277,35 @@ h1.display em{ font-style:normal; color:var(--amber); }
   font-size:clamp(15px,2.6vw,17.5px); line-height:1.85; font-weight:600;
   color:var(--cream); margin-bottom:14px; max-width:26em;
 }
+.herocard{
+  position:relative; background:var(--paper); color:var(--ink);
+  padding:14px 16px 30px; margin:4px 0 12px; max-width:340px;
+  box-shadow:var(--shadow); transform:rotate(-1.3deg);
+}
+.hc-top{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.16em;
+  color:var(--ink-faint); margin-bottom:9px; padding-bottom:8px;
+  border-bottom:1px solid var(--rule);
+}
+.hc-row{ display:grid; grid-template-columns:56px 1fr; gap:8px; align-items:baseline; padding:3px 0; }
+.hc-row span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--ink-faint); }
+.hc-row b{ font-size:14px; font-weight:700; line-height:1.5; }
+.hc-stamp{
+  position:absolute; right:12px; bottom:9px;
+  font-family:var(--sans); font-size:9.5px; letter-spacing:.08em;
+  color:var(--seal); border:1.5px solid var(--seal);
+  padding:1.5px 7px; transform:rotate(-6deg);
+}
+.herocap{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--sans); font-size:14px; font-weight:700; color:var(--cream);
+  margin:0 0 14px; padding:0; border:0; background:none; cursor:pointer;
+  border-bottom:1px solid transparent; transition:.18s;
+}
+.herocap:hover{ color:var(--amber); border-bottom-color:var(--amber); }
+.herocap i{ font-style:normal; color:var(--amber); display:inline-block; animation:nudge 1.6s var(--ease) infinite; }
+@keyframes nudge{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(4px) } }
+
 .proof{
   font-family:var(--mono); font-size:10px; letter-spacing:.14em;
   color:var(--cream-faint); margin-bottom:18px;
@@ -721,9 +750,44 @@ h1.display em{ font-style:normal; color:var(--amber); }
   .steps li{ padding:6px 0; }
   /* 新版多出的三行，在极矮屏收紧 */
   [data-layout="new"] .mech{ font-size:13.5px; line-height:1.6; margin-bottom:7px; }
-  [data-layout="new"] .proof{ display:none; }
+  [data-layout="new"] .herocard{
+  position:relative; background:var(--paper); color:var(--ink);
+  padding:14px 16px 30px; margin:4px 0 12px; max-width:340px;
+  box-shadow:var(--shadow); transform:rotate(-1.3deg);
+}
+.hc-top{
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.16em;
+  color:var(--ink-faint); margin-bottom:9px; padding-bottom:8px;
+  border-bottom:1px solid var(--rule);
+}
+.hc-row{ display:grid; grid-template-columns:56px 1fr; gap:8px; align-items:baseline; padding:3px 0; }
+.hc-row span{ font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; color:var(--ink-faint); }
+.hc-row b{ font-size:14px; font-weight:700; line-height:1.5; }
+.hc-stamp{
+  position:absolute; right:12px; bottom:9px;
+  font-family:var(--sans); font-size:9.5px; letter-spacing:.08em;
+  color:var(--seal); border:1.5px solid var(--seal);
+  padding:1.5px 7px; transform:rotate(-6deg);
+}
+.herocap{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--sans); font-size:14px; font-weight:700; color:var(--cream);
+  margin:0 0 14px; padding:0; border:0; background:none; cursor:pointer;
+  border-bottom:1px solid transparent; transition:.18s;
+}
+.herocap:hover{ color:var(--amber); border-bottom-color:var(--amber); }
+.herocap i{ font-style:normal; color:var(--amber); display:inline-block; animation:nudge 1.6s var(--ease) infinite; }
+@keyframes nudge{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(4px) } }
+
+.proof{ display:none; }
   [data-layout="new"] .privacy{ margin:10px 0 -2px; font-size:11px; }
   [data-layout="new"] .peek{ display:none; }   /* 极矮屏先砍掉这条次要入口 */
+  [data-layout="new"] .herocard{ padding:9px 12px 22px; margin-bottom:7px; max-width:300px; }
+  [data-layout="new"] .hc-top{ display:none; }
+  [data-layout="new"] .hc-row{ padding:1.5px 0; grid-template-columns:50px 1fr; }
+  [data-layout="new"] .hc-row b{ font-size:12.5px; }
+  [data-layout="new"] .hc-stamp{ font-size:8.5px; right:9px; bottom:7px; }
+  [data-layout="new"] .herocap{ font-size:12px; margin-bottom:8px; }
 }
 
 @media (max-width:640px){
@@ -793,6 +857,14 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
       <div class="kicker"><span>APPLICATION</span><b>01</b></div>
       <h1 class="display">你现在<br>要离开<em>哪</em>？</h1>
       <p class="mech" id="mechLine" hidden>填完，会有一个陌生人读到。<br>他选一个身份，回你一句话——然后你决定走不走。</p>
+
+      <div class="herocard" id="heroCard" hidden>
+        <div class="hc-top">刚才有人交上来这一份</div>
+        <div class="hc-row"><span>离开</span><b id="hcLeave">这个城市</b></div>
+        <div class="hc-row"><span>不想面对</span><b id="hcAvoid">我已经三年没交过新朋友</b></div>
+        <div class="hc-stamp" id="hcStamp">27 人说再想想</div>
+      </div>
+      <button type="button" class="herocap" id="heroCap" hidden>现在换你写两行 <i>↓</i></button>
       <p class="sub">一句话就行。说不清也没关系。<br>这张表不看你去哪，只看你在躲什么。</p>
       <p class="proof" id="proofLine" hidden>今天 <b id="proofPool">47</b> 份申请 · <b id="proofReply">41</b> 条回信</p>
     </div>
@@ -1112,7 +1184,7 @@ function setLayout(name, persist){
   else document.documentElement.setAttribute("data-layout", name);
 
   const on = name === "new";
-  ["mechLine","proofLine","privacyLine","peekLink","finePrivacy"].forEach(id => {
+  ["mechLine","proofLine","privacyLine","peekLink","heroCard","heroCap","finePrivacy"].forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;
     el.hidden = (id === "finePrivacy") ? on : !on;   // 隐私句上移后，页脚那句藏起来
@@ -1124,6 +1196,14 @@ function setLayout(name, persist){
 
   if(persist){ try{ localStorage.setItem("lug-layout", name); }catch(e){} }
 }
+/* 首屏的「现在换你写两行」：点了直接落到表单第一格 */
+document.getElementById("heroCap").addEventListener("click", () => {
+  const f = document.getElementById("fLeaving");
+  const box = document.getElementById("applyForm");
+  if(box) box.scrollIntoView({ block:"center", behavior: reduceMotion() ? "auto" : "smooth" });
+  if(f) setTimeout(() => f.focus({ preventScroll:true }), 260);
+});
+
 document.getElementById("btnLayout").addEventListener("click", () => {
   setLayout(document.documentElement.getAttribute("data-layout") === "new" ? "classic" : "new", true);
 });
@@ -1178,6 +1258,9 @@ function hydrate(over){
   set("disclaimerN", m.reviewed);
   set("sealCount", m.reviewed > 0 ? (m.reviewed + " 人已阅") : (E.sealZero || "待读"));
   set("statApps", m.poolSize);
+  set("hcLeave", (D.applications[D.meta.demoIndex] || {}).leaving || "这个城市");
+  set("hcAvoid", (D.applications[D.meta.demoIndex] || {}).avoid || "我已经三年没交过新朋友");
+  set("hcStamp", m.think + " 人说再想想");
   set("proofPool", m.poolSize);
   set("proofReply", m.reviewed);
   set("statRoutes", D.routes.length);
