@@ -209,11 +209,12 @@ T1 骨架与路由 ──┬── T2 数据契约 ──┬── T3 提交与�
 
 **依赖：** T8 　**状态：** ⬜ 待办
 
-- [ ] 仓库 `lym168/xinglixiang-qingdengdeng`
-- [ ] 上传 4 个文件（index.html / data.js / api.js / config.js）
-- [ ] Settings → Pages → main / root
+- [x] 仓库 `niuyongtaigr-oss/luggage-please-wait`
+- [x] 上传 4 个文件（index.html / data.js / api.js / config.js）
+- [x] Settings → Pages → main / root
 - [ ] 邀请伙伴为 collaborator
 - [ ] 手机实测链接
+- [ ] 邀请伙伴为 collaborator
 - [ ] `git tag demo-ok-1`
 
 ---

@@ -7,6 +7,16 @@
 
 ---
 
+## 在线地址
+
+| | |
+|---|---|
+| 演示（默认静态） | https://niuyongtaigr-oss.github.io/luggage-please-wait/ |
+| 在线版（真实池子） | https://niuyongtaigr-oss.github.io/luggage-please-wait/?live=1 |
+| 仓库 | https://github.com/niuyongtaigr-oss/luggage-please-wait |
+
+---
+
 ## 怎么跑
 
 ```bash
