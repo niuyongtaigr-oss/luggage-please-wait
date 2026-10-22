@@ -1466,7 +1466,7 @@ $("#btnSaveRoad").addEventListener("click", async () => {
     return;
   }
   D.routes.unshift({
-    mood: where, name: "你交的路", dist: "待了 " + how,
+    mood: where, name: "待了 " + how, dist: "",
     thing: thing, verified: 1, worth: 0,
     source: "来源：你刚交的 · 未核实"
   });
