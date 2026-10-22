@@ -117,12 +117,12 @@ body::after{
 @keyframes rise{ from{ opacity:0; transform:translateY(15px) } to{ opacity:1; transform:none } }
 
 .screen--apply.on  { display:grid; grid-template-columns:1fr; grid-template-areas:"h" "f" "m"; }
-.screen--review.on { display:grid; grid-template-columns:1fr; grid-template-areas:"h" "t" "a"; }
+.screen--review.on { display:grid; grid-template-columns:1fr; grid-template-areas:"left" "a"; }
 .screen--verdict.on{ display:grid; grid-template-columns:1fr; grid-template-areas:"h" "p" "q"; }
 .screen--swap.on   { display:grid; grid-template-columns:1fr; grid-template-areas:"h" "a"; }
 
 .screen--apply   .col-h{grid-area:h} .screen--apply   .col-f{grid-area:f} .screen--apply   .col-m{grid-area:m}
-.screen--review  .col-h{grid-area:h} .screen--review  .col-t{grid-area:t} .screen--review  .col-a{grid-area:a}
+.screen--review  .col-left{grid-area:left} .screen--review  .col-a{grid-area:a}
 .screen--verdict .col-h{grid-area:h} .screen--verdict .col-p{grid-area:p}
 .screen--verdict .col-q{grid-area:q}
 .screen--swap    .col-h{grid-area:h} .screen--swap    .col-a{grid-area:a}
@@ -474,7 +474,7 @@ h1.display em{ font-style:normal; color:var(--amber); }
 
 @media (min-width:1000px){
   .screen--apply.on{ grid-template-columns:.9fr 1.1fr; grid-template-areas:"h f" "m f"; column-gap:clamp(42px,4.8vw,76px); align-items:start; }
-  .screen--review.on{ grid-template-columns:1.02fr .98fr; grid-template-areas:"h a" "t a"; column-gap:clamp(36px,4.2vw,64px); align-items:start; }
+  .screen--review.on{ grid-template-columns:1.02fr .98fr; grid-template-areas:"left a"; column-gap:clamp(36px,4.2vw,64px); align-items:start; }
   .screen--review .col-a{ padding-top:36px; }
   .screen--verdict.on{ grid-template-columns:.86fr 1.14fr; grid-template-areas:"h p" "h q"; column-gap:clamp(36px,4.2vw,64px); align-items:start; }
   .screen--swap.on{ grid-template-columns:.8fr 1.2fr; grid-template-areas:"h a"; column-gap:clamp(42px,4.8vw,76px); align-items:start; }
@@ -689,6 +689,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
 
   <section class="screen screen--review" id="s-review" aria-label="审批">
 
+    <div class="col-left">
     <div class="col-h">
       <div class="kicker"><span>ON THE BELT</span><b>02</b></div>
       <h1 class="display sm"><span id="revHeadNo">今天第 <em id="revIdx">12</em> 份<br></span>等待你的判断</h1>
@@ -704,6 +705,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
         <div class="r r--key"><span class="k">不想面对</span><span class="v" id="revAvoid">我已经三年没交过新朋友</span></div>
       </div>
       <p class="cardnote" id="cardNote" hidden></p>
+    </div>
     </div>
 
     <div class="col-a">
