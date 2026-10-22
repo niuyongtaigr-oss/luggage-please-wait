@@ -99,6 +99,9 @@ window.DATA = {
 ```bash
 bash tools/selftest.sh
 # ✓ 全部通过（9 组断言）
+
+# 判断线上是否真的更新了（不要用 HTTP 200 判断）
+bash tools/wait-deploy.sh mechLine
 ```
 
 推之前跑一次，全绿再 push。
