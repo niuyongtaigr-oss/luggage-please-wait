@@ -123,6 +123,11 @@ bash tools/selftest.sh
 
 > 全部为纯 CSS 渲染，无一处图片素材。生成方式：`index.html?static=1#apply`
 
+## 换仓库 / 换 Supabase
+
+**换 Git 仓库**：代码一行都不用改（全是相对路径）。要改的是 remote、文档里 11 处地址、Pages 开关。
+步骤与五个坑见 [`docs/05-发布流程.md`](docs/05-发布流程.md) §六点半。
+
 ## 换 Supabase 项目
 
 **只改一个地方**：`config.js` 里的 URL 和 key，两个值必须成对换（来自同一个项目）。
