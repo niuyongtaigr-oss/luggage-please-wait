@@ -1105,7 +1105,8 @@ document.addEventListener("keydown", e => {
 const LAYOUTS = ["classic","new"];
 const CTA_TEXT = { classic:"交上去，让别人说一句", new:"交上去，等一个陌生人回你一句" };
 
-function setLayout(name){
+function setLayout(name, persist){
+  persist = persist !== false;
   if(!LAYOUTS.includes(name)) name = "classic";
   if(name === "classic") document.documentElement.removeAttribute("data-layout");
   else document.documentElement.setAttribute("data-layout", name);
@@ -1121,10 +1122,10 @@ function setLayout(name){
   const b = document.getElementById("btnLayout");
   if(b) b.textContent = on ? "经典" : "新版";
 
-  try{ localStorage.setItem("lug-layout", name); }catch(e){}
+  if(persist){ try{ localStorage.setItem("lug-layout", name); }catch(e){} }
 }
 document.getElementById("btnLayout").addEventListener("click", () => {
-  setLayout(document.documentElement.getAttribute("data-layout") === "new" ? "classic" : "new");
+  setLayout(document.documentElement.getAttribute("data-layout") === "new" ? "classic" : "new", true);
 });
 document.addEventListener("keydown", e => {
   const t = e.target;
@@ -1754,9 +1755,12 @@ window.addEventListener("popstate", () => go(location.hash.slice(1) || "apply", 
   if(!sk){ try{ sk = localStorage.getItem("lug-skin"); }catch(e){} }
   setSkin(sk || "ink");
 
-  let ly = QS.get("layout");
+  // URL 参数优先且不记忆：保证 ?layout=new 和 ?layout=classic 永远长得不一样，
+  // 方便同一台机器上左右对比。只有顶栏按钮的点击才写 localStorage。
+  const lyParam = QS.get("layout");
+  let ly = lyParam;
   if(!ly){ try{ ly = localStorage.getItem("lug-layout"); }catch(e){} }
-  setLayout(ly || "classic");
+  setLayout(ly || "classic", !lyParam);
 
   hydrate();
   renderCard(0);
