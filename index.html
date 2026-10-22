@@ -674,7 +674,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
       </button>
       <p class="fineprint">
         陌生人只看得到内容，看不到你是谁。<br>
-        <kbd>Ctrl</kbd>+<kbd>K</kbd> 填入演示数据
+        <kbd>Ctrl</kbd>+<kbd>K</kbd> 填入演示数据 · <kbd>R</kbd> 刷新判决
       </p>
     </div>
 
@@ -758,6 +758,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
       <div class="poolviz" id="poolViz" aria-hidden="true"></div>
       <p class="poolcap" id="poolCap">这一轮 47 份里，41 个人读到了你写的那两行。剩下 6 份还在转盘上。</p>
       <p class="round" id="roundLabel">上一轮 · 2026-10-22 23:40</p>
+      <p class="round" id="refreshHint" hidden>按 <b>R</b> 刷新</p>
     </div>
 
     <div class="col-p">
@@ -971,7 +972,8 @@ function setNet(state){
   b.classList.toggle("off", state === "off");
   t.textContent = state === "off" ? "离线 · 演示数据" : "在线 · 真实池子";
 }
-function goOffline(){ LIVE_OK = false; setNet("off"); }
+let SUPPRESS_OFFLINE = false;   // 刷新失败时不要把角标打成离线
+function goOffline(){ if(SUPPRESS_OFFLINE) return; LIVE_OK = false; setNet("off"); }
 
 function countTo(el, target, dur=900){
   if(reduceMotion()){ el.textContent = String(target); return; }
@@ -1258,6 +1260,28 @@ $("#btnVote").addEventListener("click", async () => {
   }, reduceMotion() ? 500 : 1600);
 });
 
+/* 判决书刷新：别人在你打开期间投的票，回来后能看见。
+   只在判决书页生效，失败静默（不把角标打成离线）。 */
+async function refreshVerdict(){
+  if(!LIVE_OK || S.screen !== "verdict") return;
+  SUPPRESS_OFFLINE = true;
+  try{ await renderVerdict(); }
+  catch(e){ /* 保持现状 */ }
+  finally{ SUPPRESS_OFFLINE = false; }
+}
+
+/* 切回标签页时自动刷一次（不轮询，不产生后台流量） */
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible") refreshVerdict();
+});
+
+/* 手动刷新：判决书页按 R */
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if(t && t.matches && t.matches("input,textarea")) return;   // 在输入框里打字时不触发
+  if(e.key && e.key.toLowerCase() === "r") refreshVerdict();
+});
+
 /* ── 页三 ───────────────────────────────────────── */
 function renderQuotes(list){
   const box = $("#quotes");
@@ -1471,6 +1495,8 @@ window.addEventListener("popstate", () => go(location.hash.slice(1) || "apply", 
         }
         LIVE_OK = true;
         setNet("on");
+        const rh = document.getElementById("refreshHint");
+        if(rh) rh.hidden = false;
         hydrate({ reviewed: 0, think: 0 });   // 还没拿到判决，别冒充 41
         const tw = $("#hudTodoWrap"); if(tw) tw.hidden = true;
       }
