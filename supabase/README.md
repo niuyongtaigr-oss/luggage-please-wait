@@ -194,6 +194,15 @@ where tablename = 'reasons' and indexname like '%application_id%device_id%';
 第三条如果查不到，说明 `unique (application_id, device_id)` 没建上，
 「一个人对一份只能投一次」就失效了 —— 重跑 `schema.sql`。
 
+### 10.3.5 补丁清单
+
+按顺序跑，都是 `create or replace`，不删数据：
+
+| 补丁 | 修什么 | 不跑会怎样 |
+|---|---|---|
+| `patch-002-round.sql` | 「一轮」按上海自然日算 | 池子算的是建库以来总数，凌晨会错一天 |
+| `patch-003-card-no.sql` | 审批页「今天第 N 份」返回真实卡号 | 标题只显示「等待你的判断」，不显示数字 |
+
 ### 10.4 整体重建（改坏了，想从头来）
 
 ```sql

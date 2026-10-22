@@ -691,7 +691,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
 
     <div class="col-h">
       <div class="kicker"><span>ON THE BELT</span><b>02</b></div>
-      <h1 class="display sm">今天第 <em id="revIdx">12</em> 份<br>等待你的判断</h1>
+      <h1 class="display sm"><span id="revHeadNo">今天第 <em id="revIdx">12</em> 份<br></span>等待你的判断</h1>
       <p class="sub">你交的第 <b id="revPool">47</b> 份还在转盘上。<br>先帮一个人看一份，这就是你的票。</p>
     </div>
 
@@ -1113,7 +1113,24 @@ async function pickApplication(){
   $("#revScene").textContent   = app.scene;
   $("#revIfNot").textContent   = app.ifNot;
   $("#revAvoid").textContent   = app.avoid;
-  $("#revIdx").textContent     = D.meta.reviewNo;
+
+  // 卡号：在线轨用服务端给的真实序号（这张卡是今天第几份）；
+  // 静态轨才用 data.js 里的 reviewNo。
+  // 在线轨拿不到序号（补丁未执行）时，隐藏这一行，不显示编的 12。
+  const headNo = document.getElementById("revHeadNo");
+  if(app.no != null){
+    if(headNo) headNo.hidden = false;
+    $("#revIdx").textContent   = app.no;
+    $("#revTagNo").textContent = String(app.no).padStart(4,"0");
+  }else{
+    if(headNo) headNo.hidden = true;          // 在线轨无序号
+    $("#revTagNo").textContent = "—";
+    if(!LIVE_OK){                              // 静态轨照旧
+      if(headNo) headNo.hidden = false;
+      $("#revIdx").textContent = D.meta.reviewNo;
+      $("#revTagNo").textContent = String(D.meta.reviewNo).padStart(4,"0");
+    }
+  }
 
   S.identity = ""; S.vote = ""; S.reason = ""; S.extra = "";
   $$("#ids .id").forEach(b => b.setAttribute("aria-pressed","false"));
