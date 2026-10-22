@@ -29,7 +29,8 @@ echo "等待线上出现「$MARKER」…"
 
 for i in $(seq 1 "$TRIES"); do
   CODE=$(curl -s -o /tmp/_dep.html -w "%{http_code}" "$URL")
-  HIT=$(grep -c -- "$MARKER" /tmp/_dep.html 2>/dev/null || echo 0)
+  HIT=$(grep -c -- "$MARKER" /tmp/_dep.html 2>/dev/null || true)
+  HIT=${HIT:-0}
 
   if [ "$HIT" -gt 0 ]; then
     echo "✓ 第 $((i*5)) 秒：已上线（HTTP $CODE，标记命中 $HIT 处）"
