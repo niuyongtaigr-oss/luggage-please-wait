@@ -207,14 +207,13 @@ T1 骨架与路由 ──┬── T2 数据契约 ──┬── T3 提交与�
 
 ## T14 上线
 
-**依赖：** T8 　**状态：** ⬜ 待办
+**依赖：** T8 　**状态：** 🔄 进行中（已上线，差邀请与 tag）
 
 - [x] 仓库 `niuyongtaigr-oss/luggage-please-wait`
 - [x] 上传 4 个文件（index.html / data.js / api.js / config.js）
 - [x] Settings → Pages → main / root
-- [ ] 邀请伙伴为 collaborator
+- [ ] 邀请伙伴为 collaborator（需要对方的 GitHub 用户名）
 - [ ] 手机实测链接
-- [ ] 邀请伙伴为 collaborator
 - [ ] `git tag demo-ok-1`
 
 ---
@@ -237,7 +236,8 @@ T1 骨架与路由 ──┬── T2 数据契约 ──┬── T3 提交与�
 | 状态 | 数量 | 任务 |
 |---|---|---|
 | ✅ 完成 | 12 | T1–T7, T9–T13 |
-| 🔄 进行中 | 1 | T8（代码完成，部署待执行） |
-| ⬜ 待办 | 2 | T14 上线, T15 彩排 |
+| 🔄 进行中 | 1 | T14 上线（已发布，差邀请伙伴与 tag） |
+| ⬜ 待办 | 1 | T15 彩排 |
 
-**代码与文档部分已全部就绪。剩余两件事都在「人」这一侧：建仓、彩排。**
+**仓库已上线：https://niuyongtaigr-oss.github.io/luggage-please-wait/**
+剩余：邀请伙伴、打 tag、彩排。
