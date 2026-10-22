@@ -692,7 +692,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
     <div class="col-h">
       <div class="kicker"><span>ON THE BELT</span><b>02</b></div>
       <h1 class="display sm"><span id="revHeadNo">今天第 <em id="revIdx">12</em> 份<br></span>等待你的判断</h1>
-      <p class="sub">你交的第 <b id="revPool">47</b> 份还在转盘上。<br>先帮一个人看一份，这就是你的票。</p>
+      <p class="sub" id="revSub">今天这个池子里已经有 <b id="revPool">47</b> 份，你交的那份还在转盘上。<br>先帮一个人看一份，这就是你的票。</p>
     </div>
 
     <div class="col-t">
@@ -933,17 +933,29 @@ function hydrate(over){
   }
   set("hudTodo", m.poolSize > 0 ? m.reviewNo : (E.hudTodoZero || "—"));
   set("tagNo", pad(m.poolSize));
-  set("revTagNo", pad(m.reviewNo));
+  // 在线轨：卡号由 pickApplication() 用服务端真实序号写入。
+  // 这里先给占位，避免残留写死的 0012。
+  set("revTagNo", LIVE_OK ? "—" : pad(m.reviewNo));
+  { const h = document.getElementById("revHeadNo"); if(h) h.hidden = LIVE_OK; }
   set("revPool", m.poolSize);
-  set("revIdx", m.reviewNo);
   set("disclaimerN", m.reviewed);
   set("sealCount", m.reviewed > 0 ? (m.reviewed + " 人已阅") : (E.sealZero || "待读"));
   set("statApps", m.poolSize);
   set("statRoutes", D.routes.length);
   set("poolBadge", "DEMO POOL · " + m.poolSize);
-  set("roundLabel", m.roundLabel);
-  set("passFoot", m.roundLabel);
-  set("claimNo", "NO." + pad(m.poolSize));
+  const rl = document.getElementById("roundLabel");
+  if(rl){ rl.textContent = m.roundLabel; rl.hidden = LIVE_OK; }   // 在线轨没有「上一轮」这回事
+  set("passFoot", LIVE_OK ? "你的申请" : m.roundLabel);
+  set("claimNo", LIVE_OK
+      ? (S.myNo != null ? ("NO." + pad(S.myNo)) : "")
+      : ("NO." + pad(m.poolSize)));
+
+  const revSub = document.getElementById("revSub");
+  if(revSub){
+    revSub.innerHTML = (m.poolSize > 0)
+      ? "今天这个池子里已经有 " + m.poolSize + " 份，你交的那份还在转盘上。<br>先帮一个人看一份，这就是你的票。"
+      : "这个池子今天刚开。先帮一个人看一份，这就是你的票。";
+  }
 
   const sub = document.getElementById("verdictSub");
   if(sub) sub.textContent = m.reviewed > 0
@@ -1060,7 +1072,7 @@ async function submitApply(){
       const r = await API.submitApplication({
         scene: S.scene, leaving: S.leaving, ifNot: S.ifNot, avoid: S.avoid
       });
-      if(r && r.no){ no = r.no; D.meta.poolSize = r.no; hydrate(); }
+      if(r && r.no){ no = r.no; S.myNo = r.no; D.meta.poolSize = r.no; hydrate(); }
       if(r && r.id) S.applicationId = r.id;
     }catch(e){ goOffline(); }
   }
@@ -1340,7 +1352,14 @@ async function renderVerdict(){
         // 真话：还没人读过你
         seen = 0; think = 0; quotes = [];
         liveMeta = { reviewed: 0, think: 0 };
-        const sub = document.getElementById("verdictSub");
+        const revSub = document.getElementById("revSub");
+  if(revSub){
+    revSub.innerHTML = (m.poolSize > 0)
+      ? "今天这个池子里已经有 " + m.poolSize + " 份，你交的那份还在转盘上。<br>先帮一个人看一份，这就是你的票。"
+      : "这个池子今天刚开。先帮一个人看一份，这就是你的票。";
+  }
+
+  const sub = document.getElementById("verdictSub");
         if(sub) sub.textContent = (D.empty && D.empty.subZero) || "你的牌还在转盘上，还没有人读到。";
       }
     }catch(e){ goOffline(); }
@@ -1365,7 +1384,7 @@ async function renderVerdict(){
 function syncSwapTitle(think, seen){
   const t = $("#swapTitle");
   if(!t || !seen) return;
-  t.innerHTML = think > seen / 2
+  t.innerHTML = think >= seen / 2
     ? '走不成，<br>可以先<em>换一条</em>'
     : '那就走。<br>走之前<em>先装一条</em>';
 }
