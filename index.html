@@ -149,9 +149,10 @@ h1.display em{ font-style:normal; color:var(--amber); }
 
 /* ── 纸 ─────────────────────────────────────────── */
 .paper{
+  --pp: clamp(20px,3vw,30px);
   background:var(--paper); color:var(--ink);
   box-shadow:var(--shadow); border-radius:2px;
-  padding:clamp(20px,3vw,30px); position:relative;
+  padding:var(--pp); position:relative;
 }
 .paper::before{
   content:""; position:absolute; inset:0; pointer-events:none; border-radius:2px;
@@ -202,8 +203,8 @@ h1.display em{ font-style:normal; color:var(--amber); }
 
 /* 关键格 */
 .f.key{
-  margin:6px calc(clamp(20px,3vw,30px) * -1) calc(clamp(20px,3vw,30px) * -1);
-  padding:16px clamp(20px,3vw,30px) 19px;
+  margin:6px calc(var(--pp) * -1) calc(var(--pp) * -1);
+  padding:16px var(--pp) 19px;
   background:var(--amber);
   border-top:0;
   border-left:0;
@@ -377,7 +378,7 @@ h1.display em{ font-style:normal; color:var(--amber); }
 .quote p{ text-wrap:pretty; font-family:var(--sans); font-weight:700; font-size:clamp(14px,2.5vw,17px); line-height:1.6; }
 .quote p::before{ content:"「" } .quote p::after{ content:"」" }
 .quote .by{ display:flex; align-items:center; gap:8px; margin-top:6px; font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:var(--cream-faint); flex-wrap:wrap; }
-.quote .react{ margin-left:auto; display:flex; gap:5px; }
+.quote .react{ display:flex; gap:6px; margin-left:10px; padding-left:10px; border-left:1px solid var(--line); }
 .mini{
   font-family:var(--sans); font-size:10px; letter-spacing:0; background:transparent;
   border:1px solid var(--line); color:var(--cream-faint);
@@ -479,6 +480,89 @@ h1.display em{ font-style:normal; color:var(--amber); }
   .screen--swap.on{ grid-template-columns:.8fr 1.2fr; grid-template-areas:"h a"; column-gap:clamp(42px,4.8vw,76px); align-items:start; }
   .screen--swap .col-a{ padding-top:4px; }
 }
+/* ── 矮屏（720p 投影、笔记本半屏）：整体压缩，保证一屏可见 ── */
+@media (max-height:860px){
+  .wrap{ padding-top:16px; padding-bottom:8px; }
+  .topbar-in{ padding-top:8px; padding-bottom:8px; }
+  .rail{ padding-bottom:6px; }
+  .kicker{ margin-bottom:10px; }
+  h1.display{ font-size:clamp(28px,3.8vw,42px); margin-bottom:10px; line-height:1.08; }
+  h1.display.sm{ font-size:clamp(24px,3.2vw,36px); }
+  .sub{ font-size:13px; line-height:1.7; margin-bottom:12px; }
+
+  .paper{ --pp:16px; }
+  .f{ padding:8px 0; }
+  .f label{ margin-bottom:5px; font-size:10.5px; }
+  .f input{ font-size:15px; padding-bottom:4px; }
+  .f.key{ padding:12px var(--pp) 14px; }
+  .f.key input{ font-size:16px; }
+  .hint{ font-size:10.5px; margin-top:6px; }
+  .chip{ padding:5px 12px; font-size:12px; }
+
+  .btn{ padding:13px 18px; margin-top:10px; font-size:14.5px; }
+  .steps li{ padding:7px 0; }
+  .steps b{ font-size:12px; }
+  .steps span{ font-size:10.5px; }
+
+  .label-row{ margin:12px 0 7px; }
+  .id{ padding:9px 10px; }
+  .id b{ font-size:13px; }
+  .id span{ font-size:10px; }
+  .vote{ padding:10px 12px; }
+  .vote b{ font-size:19px; }
+  .reason textarea{ min-height:52px; padding:10px; font-size:14px; }
+  .guard{ padding:8px 10px; margin-top:7px; }
+
+  .pass .pl{ padding:6px 0; }
+  .pass .pl .k{ font-size:8px; margin-bottom:3px; }
+  .pass .pl .v{ font-size:clamp(16px,2.3vw,21px); }
+  .pass .pcounts{ padding:7px 0 2px; }
+  .pass .pcounts .pc b{ font-size:clamp(20px,2.8vw,26px); }
+  .pass .pcounts .pc span{ font-size:10.5px; margin-top:4px; }
+  .pass-foot{ font-size:8px; }
+
+  .quotes{ margin-top:8px; }
+  .quote{ margin-bottom:7px; padding-left:11px; }
+  .quote p{ font-size:14px; line-height:1.5; }
+  .quote .tone{ font-size:7.5px; padding:1px 6px; margin-bottom:3px; }
+  .quote .by{ margin-top:3px; font-size:8.5px; }
+  .mini{ font-size:9px; padding:2px 7px; }
+
+  .disclaimer{ font-size:10.5px; line-height:1.6; }
+  .poolviz{ margin:10px 0 5px; }
+  .poolviz i{ height:5px; }
+  .poolcap{ font-size:8px; line-height:1.6; }
+  .round{ font-size:8px; margin-top:5px; }
+
+  .face{ min-height:190px; padding:20px; }
+  .face blockquote{ font-size:17px; margin-bottom:10px; }
+  .note-block{ margin-top:14px; font-size:11px; }
+  .mini-stats{ margin-top:14px; padding-top:10px; }
+  .foot{ padding-bottom:8px; font-size:8px; }
+  .cardnote{ margin-top:6px; padding:5px 8px; font-size:8px; }
+}
+
+/* ── 极矮屏（1280×720 窗口化）：只压间距，不砍内容 ── */
+@media (max-height:700px){
+  .wrap{ padding-top:10px; padding-bottom:4px; }
+  .foot{ display:none; }
+  .round{ display:none; }
+  h1.display{ font-size:clamp(26px,3.4vw,38px); }
+  h1.display.sm{ font-size:clamp(23px,3vw,32px); }
+  .sub{ font-size:12.5px; line-height:1.65; margin-bottom:10px; }
+  .kicker{ margin-bottom:9px; }
+  .pass .pl{ padding:4px 0; }
+  .pass .pl .v{ font-size:clamp(16px,2.1vw,20px); }
+  .pass .pcounts{ padding:6px 0 2px; }
+  .pass .pcounts .pc b{ font-size:clamp(19px,2.5vw,23px); }
+  .quote{ margin-bottom:5px; }
+  .quote p{ font-size:13px; line-height:1.45; }
+  .quotes{ margin-top:5px; }
+  .btn{ padding:11px 16px; margin-top:8px; }
+  .poolviz{ margin:12px 0 6px; }
+  .steps li{ padding:6px 0; }
+}
+
 @media (max-width:640px){
   .ids{ grid-template-columns:1fr; }
   .id{ display:grid; grid-template-columns:20px 1fr; column-gap:9px; padding:11px 13px; }
@@ -1186,7 +1270,7 @@ function renderQuotes(list){
   box.innerHTML = list.map(function(q,i){
     const helpful = (q.helpful != null) ? '<span>· ' + q.helpful + ' 人觉得有用</span>' : '';
     const react = (i === 0)
-      ? '<span class="react"><button class="mini" data-on="0" type="button">收下了</button><button class="mini" data-on="0" type="button">过了</button></span>'
+      ? '<span class="react"><button class="mini" data-on="0" aria-pressed="false" type="button">收下了</button><button class="mini" data-on="0" aria-pressed="false" type="button">过了</button></span>'
       : '';
     return '<div class="quote" data-tone="' + esc(q.tone) + '">' +
              '<span class="tone">' + esc(q.tone) + '</span>' +
@@ -1259,12 +1343,22 @@ function buildPoolViz(seen){
   box.innerHTML = order.map((_,pos) => '<i class="' + (pos < lit ? "lit" : "") + '"></i>').join("");
 }
 
-$$(".mini").forEach(b => b.addEventListener("click", () => {
+/* 口碑句的「收下了 / 过了」：必须用事件委托。
+   这几句是 renderQuotes() 动态生成的，加载时绑定会绑到已经被替换掉的旧节点上。 */
+document.addEventListener("click", e => {
+  const b = e.target.closest(".mini");
+  if(!b) return;
   const on = b.dataset.on === "1";
   const group = b.closest(".react");
-  if(group) Array.from(group.querySelectorAll(".mini")).forEach(x => { x.dataset.on = "0"; });
+  if(group) Array.from(group.querySelectorAll(".mini")).forEach(x => {
+    x.dataset.on = "0"; x.setAttribute("aria-pressed","false");
+  });
   b.dataset.on = on ? "0" : "1";
-}));
+  b.setAttribute("aria-pressed", String(!on));
+  if(!on){
+    toast(b.textContent.trim() === "收下了" ? "收下了。" : "划过去了。");
+  }
+});
 
 /* ── 页四 ───────────────────────────────────────── */
 function renderCard(i){

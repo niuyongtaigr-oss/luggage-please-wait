@@ -2,7 +2,8 @@
    api.js —— Supabase 适配层
    设计原则：这一层挂了，主演示不能挂。
    · 只用 fetch，不引 supabase-js（少一个 CDN 失败面）
-   · 所有调用 1.5 秒超时，超时即降级
+   · 超时可配置：启动 6 秒，交互 4 秒（Supabase 免费版冷启动实测 1.7s，
+     原来定 1.5s 会把正常响应误判成离线，现场直接掉进静态轨）
    · 任何异常都往上抛，由 index.html 决定回落到 data.js
    ========================================================================== */
 (function(){
@@ -29,7 +30,7 @@
   function rpc(fn, args, ms){
     if(!URL_BASE || !KEY) return Promise.reject(new Error("config_empty"));
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), ms || 1500);
+    const timer = setTimeout(() => ctrl.abort(), ms || 4000);
     return fetch(URL_BASE + "/rest/v1/rpc/" + fn, {
       method: "POST",
       headers: {
@@ -57,7 +58,9 @@
     deviceId,
 
     bootstrap(){
-      return rpc("api_bootstrap", {});
+      // 冷启动最慢，给足 6 秒；失败一次再试一次，仍失败才回落
+      return rpc("api_bootstrap", {}, 6000).catch(() =>
+             rpc("api_bootstrap", {}, 6000));
     },
 
     submitApplication(d){
