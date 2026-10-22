@@ -1,170 +1,227 @@
-# Supabase 接入 · 5 分钟做完
+# Supabase 运维手册
 
-目标：让 `?live=1` 连上真实数据库——池子是真池子，41 是真去重后的人数。
-
-**做完之前，静态演示完全不受影响**（没填密钥就自动走 `data.js`）。
-
----
-
-## 一、建项目（约 2 分钟）
-
-1. 打开 <https://supabase.com> → 用 GitHub 账号登录（免绑卡）
-2. **New project**
-   - Name：`luggage`
-   - Database Password：随便设一个，**记下来**（后面基本用不到）
-   - Region：**Southeast Asia (Singapore)** ← 离上海最近
-   - Plan：Free
-3. 等约 60 秒，项目初始化完成
+> 这份文件回答三个问题：**该跑哪些 SQL、换库改哪里、演示前清什么。**
+> 页面本身的运行见根目录 `README.md`。
 
 ---
 
-## 二、建表（约 1 分钟）
+## 0. 三条必读
 
-1. 左侧菜单 → **SQL Editor** → **New query**
-2. 打开本仓库的 `supabase/schema.sql`，**整段复制粘贴**进去
-3. 点 **Run**（或 `Ctrl/⌘ + Enter`）
-4. 看到 `Success. No rows returned` 就成了
+### ① 这些 SQL 文件分别干什么
 
-> 这个 SQL 会建三张表、一个唯一索引、六个 RPC 函数，并塞进三条路线卡。
-> 重复执行不会报错（全是 `if not exists` / `on conflict do nothing`）。
-
----
-
-## 三、拿两个值（约 1 分钟）
-
-左侧菜单最下方 → **Project Settings** → **API**
-
-| 界面上叫什么 | 对应 | 长什么样 |
+| 文件 | 什么时候跑 | 作用 |
 |---|---|---|
-| **Project URL** | `supabaseUrl` | `https://abcdefghijkl.supabase.co` |
-| **anon / public** | `supabaseKey` | `eyJhbGciOiJIUzI1NiIs...`（很长一串） |
+| **`schema.sql`** | **新项目只跑这一个** | 建 3 张表 + 唯一索引 + 6 个函数 + RLS + 授权 + 3 条种子路线 |
+| `patch-002-round.sql` | 老库升级 | 把「一轮」改成上海自然日（`current_date` 是 UTC，会错一天） |
+| `patch-003-card-no.sql` | 老库升级 | 审批页「今天第 N 份」返回真实卡号 |
+| `patch-004-route-card.sql` | 老库升级 | 小路卡片排版改成「[上海] 待了 10年」，并修正历史数据 |
+| `fix-routes.sql` | 一次性 | 清掉历史重复的路线卡，并加唯一约束防止再犯 |
 
-> ⚠️ 是 **anon public**，不是 `service_role`。
-> `service_role` 能绕过所有权限，**绝对不能放进前端**。
+**全部可以重复执行，不会删业务数据。**
 
----
+- 新开一个项目 → 只跑 `schema.sql`（它已经包含 002/003/004 的全部逻辑）
+- 已经在跑的库 → 按 002 → 003 → 004 顺序补
 
-## 四、填进 config.js
+### ② 换 URL / Key 只改一个地方
 
-打开仓库根目录的 `config.js`：
+`config.js`，两个值必须**成对换**：
 
 ```js
 window.LUG_CONFIG = {
-  supabaseUrl: "https://abcdefghijkl.supabase.co",
-  supabaseKey: "eyJhbGciOiJIUzI1NiIs..."
+  supabaseUrl: "https://新项目.supabase.co",
+  supabaseKey: "sb_publishable_新项目的key"
 };
 ```
 
-保存。完事。
+改完 `git push`，Pages 约 30–60 秒生效。
+
+### ③ 演示前清一次
+
+```sql
+truncate table public.reasons;
+truncate table public.applications;
+delete from public.routes where source like '来源：你刚交的%';
+```
+
+清完应该是：申请 **0 份**、路线 **3 张**。
 
 ---
 
-## 五、验证
+## 一、换到另一个 Supabase 项目
 
-> ✅ 本项目已在 `yxsjtjsbawnaonpvyowk` 上实测通过（2026-10-22 17:52）：
-> 序号真实累加、不会抽到自己、重复提交被唯一索引拦、自我审批被拒、判决按 `distinct device_id` 聚合。
+### 必须做的五步
 
+| # | 做什么 | 为什么 |
+|---|---|---|
+| 1 | 新项目里**整段跑 `schema.sql`** | 表、函数、权限都在那个库里，不会跟着 config 走 |
+| 2 | `config.js` 换成新项目的 **URL + anon key** | 两个值来自同一个项目，混用会 401 |
+| 3 | `git push` 并等 Pages 重新构建 | 30–60 秒，期间访问到的还是旧配置 |
+| 4 | 打开 `?live=1`，确认角标是「在线 · 真实池子」 | 只验证这一点不够，见下面三步自测 |
+| 5 | 跑 §二 的「三步自测」 | 确认不是连上了个空壳 |
+
+### 换库后**一定会遇到**的三件事
+
+**① 判决书变成「你的牌还在转盘上」**
+
+浏览器里存着**旧库的 `device_id`**。新库里没有这个 ID 交过的申请，所以查不到判决。
+
+这不是 bug。清掉即可：
+
+```js
+localStorage.removeItem('lug_device')
+```
+
+或者用无痕窗口打开。
+
+**② 池子空了，审批页抽不到卡片**
+
+新库刚建，一条申请都没有。页面会自动回落到演示数据，并在卡片下面标一行：
+
+> 池子里还没有别人交的申请 —— 这一条是演示数据
+
+这是设计好的降级行为，不是错误。
+
+**③ 路线卡只有 3 张固定的**
+
+种子数据是 `schema.sql` 里插的。旧库里你自己加的那条「小路」不会跟过来。
+
+### 绝对不能做的两件事
+
+**❌ 不要把 `service_role` / `sb_secret_` 开头的 key 放进 `config.js`**
+
+它能绕过所有权限。前端代码是公开的，等于把数据库交给所有人。
+
+`sb_publishable_` / anon key 是**设计上就允许公开**的，放进去没问题，提交到 GitHub 也没问题。
+
+**❌ 不要只换 key 不换 URL**
+
+key 失效返回 `401`，但页面不会崩——它会静默回落到静态轨，角标变「离线」。
+**看到「离线」先查 `config.js`，而不是查网络。**
+
+### 换库前后对照
+
+| 项 | 换库前 | 换库后 |
+|---|---|---|
+| 申请数据 | 旧库里 | **不会跟过来** |
+| 路线种子 | 旧库里 | `schema.sql` 跑的 3 张 |
+| 自己交的小路 | 旧库里 | 不会跟过来 |
+| 函数与权限 | 旧库里 | `schema.sql` 重新建 |
+| 设备识别 | 浏览器里的旧 device_id | 需清掉重来 |
+| CORS | 无需配置 | 无需配置（Supabase 默认 `*`） |
+
+---
+
+## 二、三步自测（换库后必跑）
 
 ```bash
-# 打开在线模式
-index.html?live=1
+U="https://新项目.supabase.co"
+K="sb_publishable_新key"
 ```
 
-顶栏右侧会出现一个角标：
+**① 函数在不在**
 
-| 角标 | 含义 |
-|---|---|
-| ● **在线 · 真实池子** | 连接成功，池子是真的 |
-| ● **离线 · 演示数据** | 连不上，已自动回落，演示照常 |
-| （不显示） | 没加 `?live=1`，走静态轨 |
+```bash
+curl -s -X POST "$U/rest/v1/rpc/api_bootstrap" \
+  -H "apikey: $K" -H "Authorization: Bearer $K" \
+  -H "Content-Type: application/json" -d '{}'
+```
 
-**自测三步：**
+应返回 `{"poolSize":0,"routes":[…]}` 且 `routes` 3 条。
+返回 `PGRST202` 说明 `schema.sql` 没跑完。
 
-1. `Ctrl+K` 填表 → 提交 → 幕布上的数字应该是**真实序号**（第一次是 1，不是 47）
-2. 审批页应该抽到**别人交的那份**（你自己交的那份不会出现）
-3. 再提交一次 → 应该提示「你已经审过这一份了」（唯一索引生效）
+**② 表有没有被锁死**
 
----
+```bash
+curl -s "$U/rest/v1/applications?select=*" -H "apikey: $K"
+```
 
-## 六、它到底怎么保证「不是同一个人」
+应返回 `42501 permission denied`。
+**如果返回了数据，说明 RLS 或 `revoke` 没生效——数据是公开的，必须立刻修。**
 
-| 机制 | 在哪 | 作用 |
-|---|---|---|
-| `device_id` | 浏览器 `localStorage` 生成一次 | 认设备，不认人 |
-| `unique (application_id, device_id)` | 数据库索引 | 一个人对一份只能投一次 |
-| `a.device_id <> p_device` | `api_next_application` | 不会抽到自己的 |
-| `count(distinct device_id)` | `api_my_verdict` | 「41 个人」是去重后的人数 |
+**③ 唯一索引在不在**
 
-**没有登录、没有手机号、没有实名。** 清掉浏览器存储就变成「新的人」——这是刻意的，理由见 `docs/02-技术方案.md` §6.6。
+SQL Editor 里跑：
 
----
+```sql
+select indexname from pg_indexes
+where tablename = 'reasons' and indexname like '%application_id%device_id%';
+```
 
-## 七、常见问题
-
-| 现象 | 原因 | 处理 |
-|---|---|---|
-| 角标一直是「离线」 | config 没填 / URL 多了斜杠 / key 用了 service_role | 检查 `config.js` |
-| 控制台 `401` | anon key 不对 | 重新复制 anon public |
-| 控制台 `404 ... /rpc/api_xxx` | SQL 没跑完 | 重跑一遍 `schema.sql` |
-| 控制台 `permission denied` | 表权限被拒（正常） | 前端只该调 RPC，不该直接读表 |
-| 提交后序号一直是 1 | 时区问题：`current_date` 用的是 UTC | 演示无所谓；要精确就改成 `now() at time zone 'Asia/Shanghai'` |
+**返回空就说明「一个人对一份只能投一次」没生效**，重跑 `schema.sql`。
 
 ---
 
-## 八、临时开关
+## 三、演示前五分钟
 
-想中途切回静态轨，把 URL 里的 `?live=1` 删掉即可，**不用改任何代码**。
+### 清数据
 
-想彻底关掉在线模式，把 `config.js` 里的两个值清空。
+```sql
+truncate table public.reasons;
+truncate table public.applications;
+delete from public.routes where source like '来源：你刚交的%';
+```
+
+### 确认清干净
+
+```sql
+select
+  (select count(*) from public.applications) as 申请,
+  (select count(*) from public.routes)       as 路线,
+  (select count(*) from public.reasons)      as 理由;
+```
+
+期望：`0 / 3 / 0`
+
+### 页面确认
+
+打开线上地址加 `?live=1`：
+
+- 顶栏显示「今天刚开始」，不是「今天第 0 份」
+- 角标是「在线 · 真实池子」
+- 池子说明是「今天还没有人交。你可以是第一个。」
+
+### 来不及清怎么办
+
+**不清也能演示**，只是：
+
+- 序号从 8 开始，不是从 1
+- 审批页可能抽到测试数据（「联动测试用」这类句子）
+- 评委看到会问
+
+所以**要么清，要么全程用静态轨**（不加 `?live=1`）。静态轨不读数据库，清不清都一样。
 
 ---
 
-## 九、清库（演示前重置）
+## 四、日常运维 SQL
 
-在 SQL Editor 里跑：
+### 重置申请与理由
 
 ```sql
 truncate table public.reasons;
 truncate table public.applications;
 ```
 
-路线卡不动。想恢复三条种子路线，重跑 `schema.sql` 最后那段 `insert`。
-
----
-
-## 十、运维 SQL（随时可用）
-
-下面三段直接粘进 **SQL Editor** 跑，不需要改任何代码。
-
-### 10.1 演示前重置（最常用）
-
-清空所有申请和理由，让评委现场填出来的才是真的。路线卡不动。
+### 只重置路线（恢复三张种子卡）
 
 ```sql
-truncate table public.reasons;
-truncate table public.applications;
+delete from public.routes where source like '来源：你刚交的%';
 ```
 
-跑完点开页面刷新一下，顶栏应该变成「今天第 0 份」，在线角标不变。
-
-> 为什么要清：池子里如果留着测试数据，评委扫码进来会审到你写的测试句，
-> 一眼就看出这是假数据。**清干净，让它从 0 开始长。**
-
-### 10.2 修路线卡重复（我之前留下的坑）
-
-如果你把 `schema.sql` 跑过两次，`routes` 会有 6 条（每张卡两条）。
-
-原因：种子里用了 `on conflict do nothing`，但当时 `routes` 表**没有唯一约束**，
-这句话是空操作，插几次就重复几次。
-
-**修法（二选一）：**
-
-**A. 重跑一遍 `schema.sql`** —— 最新的版本自带自愈：会先清重复、再加唯一约束。
-
-**B. 只跑下面这段：**
+### 看今天到底有多少
 
 ```sql
--- 去重，每个名字只留一条
+select count(*) from public.applications where created_at >= public.round_start();
+```
+
+### 看某个设备交了什么
+
+```sql
+select * from public.applications where device_id = '这里替换' order by created_at desc;
+```
+
+### 修路线重复（历史遗留）
+
+```sql
 delete from public.routes
 where id in (
   select id from (
@@ -173,42 +230,18 @@ where id in (
   ) t where t.rn > 1
 );
 
--- 加唯一约束，防止以后再重复
 alter table public.routes add constraint routes_name_key unique (name);
 ```
 
-### 10.3 体检（30 秒确认库是好的）
+> 别用 `min(id)`：Postgres 没有 uuid 的聚合函数，会直接报错。踩过。
 
-```sql
--- 应该有 3 条，且没有重复
-select name, count(*) from public.routes group by name order by 1;
-
--- 应该有 6 个函数
-select proname from pg_proc where proname like 'api_%' order by 1;
-
--- 唯一索引在不在（应该有 1 行）
-select indexname from pg_indexes
-where tablename = 'reasons' and indexname like '%application_id%device_id%';
-```
-
-第三条如果查不到，说明 `unique (application_id, device_id)` 没建上，
-「一个人对一份只能投一次」就失效了 —— 重跑 `schema.sql`。
-
-### 10.3.5 补丁清单
-
-按顺序跑，都是 `create or replace`，不删数据：
-
-| 补丁 | 修什么 | 不跑会怎样 |
-|---|---|---|
-| `patch-002-round.sql` | 「一轮」按上海自然日算 | 池子算的是建库以来总数，凌晨会错一天 |
-| `patch-003-card-no.sql` | 审批页「今天第 N 份」返回真实卡号 | 标题只显示「等待你的判断」，不显示数字 |
-
-### 10.4 整体重建（改坏了，想从头来）
+### 整体重建
 
 ```sql
 drop table if exists public.reasons cascade;
 drop table if exists public.applications cascade;
 drop table if exists public.routes cascade;
+drop function if exists public.round_start();
 drop function if exists public.api_bootstrap();
 drop function if exists public.api_submit_application(text,text,text,text,text);
 drop function if exists public.api_next_application(text,text);
@@ -217,61 +250,33 @@ drop function if exists public.api_my_verdict(text);
 drop function if exists public.api_submit_route(text,text,text);
 ```
 
-然后重新粘一遍 `schema.sql`。
+然后重新跑 `schema.sql`。
 
 ---
 
-## 十一、上线后核对清单
+## 五、常见问题
 
-- [ ] `schema.sql` 跑过，三条体检 SQL 都对
-- [ ] `routes` 是 3 条，没有重复
-- [ ] 页面加 `?live=1`，角标显示「在线 · 真实池子」
-- [ ] 顶栏「今天第 N 份」和实际池子数一致
-- [ ] 提交一次，序号 +1
-- [ ] 再提交一次，审批页不会抽到自己
-- [ ] 同一份投两次，提示「你已经审过这一份了」
-- [ ] 断网后刷新，角标变「离线 · 演示数据」，演示照常
-- [ ] 演示前跑过 `10.1` 重置
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| 角标「离线 · 演示数据」 | config 没填 / key 错 / 网络 | 先查 `config.js`，再看 §二① |
+| 控制台 401 | anon key 不对，或 URL 与 key 不同项目 | 成对重填 |
+| `PGRST202` 找不到函数 | `schema.sql` 没跑完 | 重跑 |
+| `PGRST205` 找不到表 | 同上 | 重跑 |
+| `42501 permission denied` | 正常。anon 不该直接读表 | 无需处理 |
+| 提交后序号一直是 1 | 时区问题（老版本） | 跑 `patch-002` |
+| 审批页只有「等待你的判断」没有数字 | 卡号补丁没跑 | 跑 `patch-003` |
+| 小路卡片显示「你交的路」 | 排版补丁没跑 | 跑 `patch-004` |
+| 免费项目打不开 | 7 天不活动被暂停 | Dashboard 里点恢复 |
 
 ---
 
-## 十二、「数据是累积的」——这件事到底怎么算
+## 六、当前使用的项目
 
-数据**永远不删，一直累积**。但页面上的数字不是累计值，是**这一轮**的值。
-
-### 一轮 = 一个自然日（上海时间）
-
-```
-poolSize      = 今天 00:00 之后提交的份数
-「今天第 N 份」= 今天第几个交的
-审批页抽到     = 只从今天的池子里抽
-判决书         = 这个 device 最近一份「有人回应过」的申请（可以是昨天的）
-```
-
-所以：
-
-| 场景 | 结果 |
+| 项 | 值 |
 |---|---|
-| 今天第 1 个交 | 显示「今天第 1 份」 |
-| 昨天交了 200 份，今天第 1 个交 | 还是显示「今天第 1 份」 |
-| 今天审别人 | 只抽得到今天交的，抽不到昨天的 |
-| 昨天交的、今天才被读完 | 你今天打开判决书能看到——这就是「上一轮」 |
+| Project URL | `https://yxsjtjsbawnaonpvyowk.supabase.co` |
+| Key 类型 | `sb_publishable_…`（可公开） |
+| 建表时间 | 2026-10-22 17:44 |
+| 补丁状态 | 002 ✅ 003 ✅ 004 ✅ |
 
-**「上一轮」不是文案修辞，是数据结构**：判决不按日期过滤，因为它本来就该跨轮次回来找你。
-
-### 为什么必须用 `round_start()` 而不是 `current_date`
-
-`current_date` 用的是数据库会话时区，Supabase 默认是 **UTC**。
-上海时间 0:00–8:00 这段时间，UTC 还是昨天——**凌晨 1 点交的申请会被算进前一天**。
-
-所以全部换成了：
-
-```sql
-select date_trunc('day', now() at time zone 'Asia/Shanghai') at time zone 'Asia/Shanghai';
-```
-
-### 所以 truncate 不是必须的
-
-`10.1 演示前重置` 是**可选的**，只是为了让序号从小的数字开始、别让评委审到测试句。
-
-不清也不会错：昨天那 4 条测试数据今天就自动不在池子里了，因为它们是「上一轮」。
+> 换项目时**连这一节一起改**，否则下次没人知道线上连的是哪个库。

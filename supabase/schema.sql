@@ -123,7 +123,13 @@ as $$
     'scene',   a.scene,
     'leaving', a.leaving,
     'ifNot',   a.if_not,
-    'avoid',   a.avoid
+    'avoid',   a.avoid,
+    -- 这张卡是今天第几份交上来的（前端标题用）
+    'no',      (
+      select count(*) from applications x
+      where x.created_at >= round_start()
+        and x.created_at <= a.created_at
+    )
   )
   from applications a
   where a.created_at >= round_start()

@@ -123,6 +123,15 @@ bash tools/selftest.sh
 
 > 全部为纯 CSS 渲染，无一处图片素材。生成方式：`index.html?static=1#apply`
 
+## 换 Supabase 项目
+
+**只改一个地方**：`config.js` 里的 URL 和 key，两个值必须成对换（来自同一个项目）。
+
+**但新项目必须整段跑一遍 `supabase/schema.sql`** —— 表、函数、权限都在那个库里，不会跟着 config 走。
+
+三个换库后一定会遇到的现象，以及**演示前必跑的清库 SQL**，都写在
+[`supabase/README.md`](supabase/README.md)（运维手册）里。
+
 ## 三条硬约束
 
 1. **审批理由只能由人写。** 代码里不存在对理由正文的任何模型调用。
