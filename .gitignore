@@ -1,0 +1,18 @@
+# 依赖（本项目零依赖，仅防御）
+node_modules/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 临时目录
+_t/
+_tmp/
+*.log
+
+# 本地私密（publishable key 在 config.js 里，可公开；secret 绝不能进来）
+.env
+.env.*
+*.secret
