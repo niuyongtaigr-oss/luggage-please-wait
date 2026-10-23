@@ -855,7 +855,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
     <div class="col-h">
       <div class="kicker"><span>APPLICATION</span><b>01</b></div>
       <h1 class="display">你现在<br>要离开<em>哪</em>？</h1>
-      <p class="mech" id="mechLine" hidden>填完，会有一个陌生人读到。<br>他选一个身份，回你一句话——然后你决定走不走。</p>
+      <p class="mech" id="mechLine" hidden>写两行，换陌生人一句真话。<br>他选一个身份，只回你一句——然后你决定走不走。</p>
 
       <div class="herocard" id="heroCard" hidden>
         <div class="hc-top">刚才有人交上来这一份</div>
@@ -877,7 +877,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
       <form class="paper" id="applyForm" novalidate>
         <div class="paper-head">
           <span>TAG · <b id="tagNo">0047</b></span>
-          <span id="tagMeta">还差 4 项</span>
+          <span id="tagMeta">还差 4 格 · 约 1 分钟</span>
         </div>
 
         <div class="f" id="fldScene">
@@ -1385,7 +1385,7 @@ function requiredMissing(){
 }
 function updateMeta(){
   const n = requiredMissing().length;
-  $("#tagMeta").textContent = n ? `还差 ${n} 项` : "可以交了";
+  $("#tagMeta").textContent = n ? `还差 ${n} 格 · 约 1 分钟` : "可以交了";
   $("#tagMeta").style.color = n ? "" : "var(--amber)";
 }
 
