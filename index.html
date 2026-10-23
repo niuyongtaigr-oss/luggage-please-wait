@@ -275,11 +275,11 @@ h1.display em{ font-style:normal; color:var(--amber); }
 
 .mech{
   font-size:clamp(15px,2.6vw,17.5px); line-height:1.85; font-weight:600;
-  color:var(--cream); margin-bottom:14px; max-width:26em;
+  color:var(--cream); margin-bottom:8px; max-width:26em;
 }
 .herocard{
   position:relative; background:var(--paper); color:var(--ink);
-  padding:18px 20px 40px; margin:10px 0 16px; max-width:380px;
+  padding:15px 18px 34px; margin:8px 0 12px; max-width:370px;
   transform:rotate(-2.2deg);
   box-shadow:0 26px 60px -28px rgba(0,0,0,.95), 0 0 0 1px rgba(242,237,226,.20);
 }
@@ -290,12 +290,15 @@ html[data-layout="new"]:not(.static) .herocard{ animation:cardIn .62s .18s var(-
 html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic-bezier(.2,1.5,.35,1) both; }
 .hc-top{
   font-family:var(--mono); font-size:8.5px; letter-spacing:.16em;
-  color:var(--ink-faint); margin-bottom:9px; padding-bottom:8px;
+  color:var(--ink-faint); margin-bottom:7px; padding-bottom:6px;
   border-bottom:1px solid var(--rule);
 }
 .hc-row{ display:grid; grid-template-columns:56px 1fr; gap:8px; align-items:baseline; padding:3px 0; }
 .hc-row span{ font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:var(--ink-faint); padding-top:2px; }
-.hc-row b{ font-size:17px; font-weight:800; line-height:1.45; letter-spacing:-.01em; }
+.hc-row b{ font-size:16.5px; font-weight:800; line-height:1.4; letter-spacing:-.01em; }
+.hc-stamp.is-empty{
+  color:var(--ink-faint); border-color:var(--ink-faint); border-style:dashed; opacity:.75;
+}
 .hc-stamp{
   position:absolute; right:14px; bottom:11px;
   font-family:var(--sans); font-size:12.5px; font-weight:800; letter-spacing:.1em;
@@ -303,10 +306,10 @@ html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic
   padding:2px 10px; transform:rotate(-6deg);
 }
 
-.hc-actions{ display:flex; gap:8px; margin:-2px 0 16px; }
+.hc-actions{ display:flex; gap:8px; margin:-2px 0 9px; }
 .hc-btn{
   font-family:var(--sans); font-size:13.5px; font-weight:800; letter-spacing:.02em;
-  padding:10px 22px; border-radius:2px; cursor:pointer;
+  padding:9px 19px; border-radius:2px; cursor:pointer;
   border:1.5px solid var(--line); background:transparent; color:var(--cream);
   transition:transform .16s var(--ease), background .18s, color .18s, border-color .18s;
 }
@@ -323,7 +326,7 @@ html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic
 .herocap{
   display:inline-flex; align-items:center; gap:8px;
   font-family:var(--sans); font-size:14.5px; font-weight:800; letter-spacing:.02em;
-  color:var(--amber); margin:0 0 16px; padding:11px 18px;
+  color:var(--amber); margin:0 0 9px; padding:9px 16px;
   border:1.5px solid var(--amber); border-radius:2px; background:transparent;
   cursor:pointer; transition:.18s var(--ease);
 }
@@ -335,7 +338,7 @@ html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic
 .proof{
   display:flex; align-items:baseline; gap:10px;
   font-family:var(--mono); font-size:9.5px; letter-spacing:.14em;
-  color:var(--cream-faint); margin-bottom:18px;
+  color:var(--cream-faint); margin-bottom:10px;
 }
 .proof b{ color:var(--amber); font-weight:700; font-size:16px; letter-spacing:-.02em; }
 .proof span{ display:inline-flex; align-items:baseline; gap:4px; }
@@ -758,6 +761,19 @@ html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic
 }
 
 /* ── 极矮屏（1280×720 窗口化）：只压间距，不砍内容 ── */
+@media (max-height:860px){
+  /* 新版首屏元素多，这一档单独收紧，给投票按钮腾出空间 */
+  [data-layout="new"] .herocard{ padding:13px 16px 30px; margin:6px 0 10px; max-width:360px; }
+  [data-layout="new"] .hc-top{ margin-bottom:6px; padding-bottom:6px; }
+  [data-layout="new"] .hc-row b{ line-height:1.38; font-size:16px; }
+  [data-layout="new"] .hc-actions{ margin:0 0 11px; }
+  [data-layout="new"] .hc-btn{ padding:8px 17px; font-size:12.5px; }
+  [data-layout="new"] .mech{ margin-bottom:9px; }
+  [data-layout="new"] .proof{ margin-bottom:11px; }
+  [data-layout="new"] .herocap{ padding:9px 15px; margin-bottom:11px; }
+  [data-layout="new"] .steps li{ padding:7px 0; }
+}
+
 @media (max-height:700px){
   .wrap{ padding-top:10px; padding-bottom:4px; }
   .foot{ display:none; }
@@ -781,12 +797,14 @@ html[data-layout="new"]:not(.static) .hc-stamp{ animation:chStamp .5s .62s cubic
   [data-layout="new"] .proof{ display:none; }
   [data-layout="new"] .privacy{ margin:10px 0 -2px; font-size:11px; }
   [data-layout="new"] .peek{ display:none; }   /* 极矮屏先砍掉这条次要入口 */
-  [data-layout="new"] .herocard{ padding:9px 12px 22px; margin-bottom:7px; max-width:300px; }
+  [data-layout="new"] .herocard{ padding:8px 11px 16px; margin-bottom:6px; max-width:300px; }
   [data-layout="new"] .hc-top{ display:none; }
   [data-layout="new"] .hc-row{ padding:1.5px 0; grid-template-columns:50px 1fr; }
   [data-layout="new"] .hc-row b{ font-size:12.5px; }
   [data-layout="new"] .hc-stamp{ font-size:8.5px; right:9px; bottom:7px; }
-  [data-layout="new"] .herocap{ font-size:12px; margin-bottom:8px; }
+  [data-layout="new"] .herocap{ font-size:12px; margin-bottom:7px; padding:7px 13px; }
+  [data-layout="new"] .hc-actions{ margin:0 0 5px; }
+  [data-layout="new"] .hc-btn{ padding:6px 14px; font-size:11.5px; }
 }
 
 @media (max-width:640px){
@@ -858,7 +876,7 @@ html.static .pass-foot{ transform:translateX(-42px); opacity:.3; }
       <p class="mech" id="mechLine" hidden>写两行，换陌生人一句真话。<br>他选一个身份，只回你一句——然后你决定走不走。</p>
 
       <div class="herocard" id="heroCard" hidden>
-        <div class="hc-top">刚才有人交上来这一份</div>
+        <div class="hc-top" id="hcTop">刚才有人交上来这一份</div>
         <div class="hc-row"><span>离开</span><b id="hcLeave">这个城市</b></div>
         <div class="hc-row"><span>不想面对</span><b id="hcAvoid">我已经三年没交过新朋友</b></div>
         <div class="hc-stamp" id="hcStamp">27 人说再想想</div>
@@ -1383,9 +1401,34 @@ function requiredMissing(){
   if(!$("#fAvoid").value.trim())  m.push("Avoid");
   return m;
 }
+/* 边填边把首屏那张牌变成「你的」——即时回报，而不是等提交 */
+function syncHeroPreview(){
+  if(document.documentElement.getAttribute("data-layout") !== "new") return;
+  const elLv = document.getElementById("hcLeave"), elAv = document.getElementById("hcAvoid");
+  const top  = document.getElementById("hcTop"), stamp = document.getElementById("hcStamp");
+  const lv = ((($("#fLeaving") || {}).value) || "").trim();
+  const av = ((($("#fAvoid")   || {}).value) || "").trim();
+  const demo = D.applications[D.meta.demoIndex] || {};
+
+  // 还没动笔：保持「别人的牌」，让人先看见
+  if(!lv && !av){
+    if(top)   top.textContent = "刚才有人交上来这一份";
+    if(stamp){ stamp.textContent = D.meta.think + " 人说再想想"; stamp.classList.remove("is-empty"); }
+    if(elLv)  elLv.textContent = demo.leaving || "这个城市";
+    if(elAv)  elAv.textContent = demo.avoid   || "我已经三年没交过新朋友";
+    return;
+  }
+  // 一动笔：这张牌就变成「你的」
+  if(top)   top.textContent = "你的牌 · 正在成型";
+  if(stamp){ stamp.textContent = "还没人读到"; stamp.classList.add("is-empty"); }
+  if(elLv)  elLv.textContent = lv || "还没写";
+  if(elAv)  elAv.textContent = av || "还没写";
+}
+
 function updateMeta(){
   const n = requiredMissing().length;
   $("#tagMeta").textContent = n ? `还差 ${n} 格 · 约 1 分钟` : "可以交了";
+  syncHeroPreview();
   $("#tagMeta").style.color = n ? "" : "var(--amber)";
 }
 
@@ -1859,6 +1902,9 @@ $("#btnReset").addEventListener("click", () => {
   $$(".f").forEach(f => f.classList.remove("err"));
   updateMeta();
   renderCard(0);
+  const _top = document.getElementById("hcTop"), _st = document.getElementById("hcStamp");
+  if(_top) _top.textContent = "刚才有人交上来这一份";
+  if(_st){ _st.textContent = D.meta.think + " 人说再想想"; _st.classList.remove("is-empty"); }
   const _sub = document.getElementById("subLine");
   if(_sub) _sub.hidden = false;
   const _ha = document.getElementById("hcActions"), _hr = document.getElementById("hcResult");
